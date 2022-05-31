@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 export const schemas = {
     "$id": "ia-schema",
     "$schema": "file://ia-schema/schema.json",
@@ -8589,4 +8590,4 @@ export const schemas = {
             }
         }
     }
-}
+};

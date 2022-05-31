@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import { Uri } from 'vscode';
 
-import {schemas} from "./schemas";
+import { schemas } from "./schemas";
 
 const SCHEMA = "ia-schema";
 let schemaJSON = "";
@@ -11,51 +11,44 @@ let iaDocuments: string[] = [];
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export async function activate(context: vscode.ExtensionContext) {
+export async function activate(_context: vscode.ExtensionContext) {
 	schemaJSON = JSON.stringify(schemas);
 
 	const vscodeYaml = vscode.extensions.getExtension("redhat.vscode-yaml");
-	if(vscodeYaml)
-	{
+	if (vscodeYaml) {
 		const yamlExtensionAPI = await vscodeYaml.activate();
 		yamlExtensionAPI.registerContributor(SCHEMA, onRequestSchemaURI, onRequestSchemaContent);
 	}
 
-	vscode.workspace.textDocuments.forEach(document => {
-		handleDocumentRefresh(document);
-	});
+	vscode.workspace.textDocuments.forEach(document => handleDocumentRefresh(document));
 
-	vscode.workspace.onDidChangeTextDocument(function(e) {
-		handleDocumentRefresh(e.document);
-    });
+	vscode.workspace.onDidChangeTextDocument(e => handleDocumentRefresh(e.document));
 
-	vscode.workspace.onDidOpenTextDocument(function(document) {
-		handleDocumentRefresh(document);
-	});
+	vscode.workspace.onDidOpenTextDocument(document => handleDocumentRefresh(document));
 }
 
 function handleDocumentRefresh(document: vscode.TextDocument) {
 	const uri = decodeURI(document.uri.toString());
-        // Very hacky
-		if(document.lineCount > 0 && document.lineAt(0).text.includes("info:")) {
-			if(!iaDocuments.includes(uri)) {
-				vscode.window.showInformationMessage('Detected ItemsAdder yml configuration!');
-				iaDocuments.push(uri);
-			}
-		} else {
-			// Remove from array
-			iaDocuments = iaDocuments.filter(function(a){return a !== uri;});
+	// Very hacky
+	if (document.lineCount > 0 && document.lineAt(0).text.includes("info:")) {
+		if (!iaDocuments.includes(uri)) {
+			vscode.window.showInformationMessage('Detected ItemsAdder yml configuration!');
+			iaDocuments.push(uri);
 		}
+	} else {
+		// Remove from array
+		iaDocuments = iaDocuments.filter(a => a !== uri);
+	}
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
 
 function onRequestSchemaURI(resource: string): string | undefined {
-	if(!resource.endsWith('.yml')) {
+	if (!resource.endsWith('.yml')) {
 		return undefined;
 	}
-	if(!iaDocuments.includes(decodeURI(resource))) {
+	if (!iaDocuments.includes(decodeURI(resource))) {
 		return undefined;
 	}
 	return `${SCHEMA}://schema/ItemsAdder`;
